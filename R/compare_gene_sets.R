@@ -8,6 +8,7 @@
 #'
 #' @return A binary matrix used to generate an UpSet plot. The plot is shown automatically.
 #' @export
+
 compare_gene_sets <- function(gene_sets, pvalueCutoff = 0.05, qvalueCutoff = 0.05) {
   require(UpSetR)
   
