@@ -3,6 +3,7 @@ Title: Multi-Omics Network Integration and Visualization
 Version: 0.0.0.9000
 Authors@R: 
     person("Min-Gyoung", "Shin", role = c("aut", "cre"))
+Maintainer: The package maintainer <yourself@somewhere.net>
 Description: Tools to integrate and visualize networks derived from multiple omics data
     sources (e.g., transcriptomics, proteomics, metabolomics). Provides utilities to
     perform MCL clustering, overlay pathway enrichment, compare gene sets, and
