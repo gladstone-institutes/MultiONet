@@ -21,7 +21,7 @@ download.file(
 gene_sets=list(Set1=as.matrix(set1),Set2=as.matrix(set2))
 
 ## Venn diagram
-compare_gene_sets(gene_sets)
+compare_gene_list(gene_sets)
 
 ## Generate networks
 network_result=make_networks(gene_sets, indirect_neighbors=1, score_threshold=900, network_file_prefix="network", string_link_file="9606.protein.links.full.v11.5.txt.gz", string_alias_file="9606.protein.aliases.v11.5.txt.gz", 
