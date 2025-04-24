@@ -19,7 +19,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
                           network_file_prefix="network",
                           string_link_file="9606.protein.links.full.v11.5.txt.gz",
                           string_alias_file="9606.protein.aliases.v11.5.txt.gz",
-                          plot_network=FALSE, id_source="Ensembl_UniProt_GN",
+                          plot_network=FALSE, plot_network_node_threshold = 100, id_source="Ensembl_UniProt_GN",
                           node_size=5, label_genes=TRUE) {
   
   require(ggnetwork)
@@ -72,7 +72,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
     sub_g <- induced_subgraph(g, hop_nodes)
     sub_g <- delete_vertices(sub_g, which(degree(sub_g) == 0))
     
-    if (plot_network && vcount(sub_g) <= 100) {
+    if (plot_network && vcount(sub_g) <= plot_network_node_threshold) {
       net <- intergraph::asNetwork(sub_g)
       gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = 3) +
         labs(title = paste0("Subnetwork for ", names(gene_sets)[gsi]))
@@ -82,7 +82,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
     comps <- clusters(sub_g, mode = "weak")
     largest <- induced_subgraph(sub_g, V(sub_g)[comps$membership == which.max(comps$csize)])
     
-    if (plot_network && vcount(largest) <= 100) {
+    if (plot_network && vcount(largest) <= plot_network_node_threshold) {
       net <- intergraph::asNetwork(largest)
       gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = 3) +
         labs(title = paste0("Largest subnetwork for ", names(gene_sets)[gsi]))

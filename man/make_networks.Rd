@@ -12,6 +12,7 @@ make_networks(
   string_link_file = "9606.protein.links.full.v11.5.txt.gz",
   string_alias_file = "9606.protein.aliases.v11.5.txt.gz",
   plot_network = FALSE,
+  plot_network_node_threshold = 100,
   id_source = "Ensembl_UniProt_GN",
   node_size = 5,
   label_genes = TRUE

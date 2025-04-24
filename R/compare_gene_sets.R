@@ -35,11 +35,13 @@ compare_gene_sets <- function(gene_sets, pvalueCutoff = 0.05, qvalueCutoff = 0.0
   bin_df <- as.data.frame(bin_mat)
   
   # Generate the UpSet plot
-  upset(bin_df,
+  us=upset(bin_df,
         sets = names(filtered_sets),
         order.by = "freq",
         keep.order = TRUE,
         mainbar.y.label = "Shared Gene Set Count")
+  
+  print(us)
   
   return(invisible(bin_df))
 }
