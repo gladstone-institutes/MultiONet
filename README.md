@@ -12,7 +12,7 @@ download.file(
 )
 
 
-## make gene sets
+## Make gene sets
 gene_sets=list(Set1=as.matrix(set1),Set2=as.matrix(set2))
 
 ## Venn diagram
