@@ -8,7 +8,7 @@
 #'
 #' @return A binary matrix used to generate an UpSet plot. The plot is shown automatically.
 #' @export
-
+#' 
 compare_gene_sets <- function(gene_sets, pvalueCutoff = 0.05, qvalueCutoff = 0.05) {
   require(UpSetR)
   
@@ -18,6 +18,7 @@ compare_gene_sets <- function(gene_sets, pvalueCutoff = 0.05, qvalueCutoff = 0.0
   
   # Filter each ORA result based on pvalue and qvalue thresholds
   filtered_sets <- lapply(gene_sets, function(df) {
+    df=as.data.frame(df)
     df <- df[df$pvalue < pvalueCutoff & df$qvalue < qvalueCutoff, ]
     unique(df$ID)
   })
