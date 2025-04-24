@@ -1,5 +1,10 @@
 # MultiONet
 
+## Installation
+library(devtools)
+install_github('gladstone-institutes/MultiONet')
+
+
 ## Download STRING networks
 download.file(
   "https://stringdb-static.org/download/protein.links.full.v11.5/9606.protein.links.full.v11.5.txt.gz",
