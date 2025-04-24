@@ -1,6 +1,3 @@
-setwd("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/data")
-set1<-read.table("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/set1.txt")
-set2<-read.table("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/set2.txt")
 
 gene_sets=list(Set1=as.matrix(set1),Set2=as.matrix(set2))
 compare_gene_sets(gene_sets)
