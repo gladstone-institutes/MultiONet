@@ -49,8 +49,8 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
   duplicated_names <- duplicated(V(g)$name)
   if (any(duplicated_names)) V(g)$name <- make.unique(V(g)$name)
   
-  edge_table <- as_data_frame(g, what = "edges")
-  node_table <- as_data_frame(g, what = "vertices")
+  edge_table <- igraph::as_data_frame(g, what = "edges")
+  node_table <- igraph::as_data_frame(g, what = "vertices")
   
   gene_sets <- c(gene_sets, list(combined = as.matrix(unique(unlist(gene_sets)))))
   
