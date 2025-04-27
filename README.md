@@ -32,6 +32,8 @@ network_result=make_networks(gene_sets, indirect_neighbors=1, score_threshold=90
 mcl_result=find_mcl(network_result[["largest_networks"]][[2]], min_node=50, expansion = 5, inflation = 10, plot_network = TRUE, label_genes = TRUE)
 
 ## Perform ORA
+library(igrpah)
+
 ora_result1=run_ora(V(mcl_result[[1]])$name, pvalueCutoff = 0.05, qvalueCutoff = 0.05, showCategory = 10, plot = FALSE)
 
 ora_result2=run_ora(V(mcl_result[[2]])$name, pvalueCutoff = 0.05, qvalueCutoff = 0.05, showCategory = 10, plot = FALSE)
