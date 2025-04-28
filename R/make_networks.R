@@ -87,7 +87,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
     comps <- clusters(sub_g, mode = "weak")
     largest <- induced_subgraph(sub_g, V(sub_g)[comps$membership == which.max(comps$csize)])
     
-    if (plot_network && vcount(largest) <= plot_network_node_threshold) {
+    if (vcount(sub_g)>0 && plot_network && vcount(largest) <= plot_network_node_threshold) {
       net <- intergraph::asNetwork(largest)
       gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = 3) +
         labs(title = paste0("Largest subnetwork for ", names(gene_sets)[gsi]))
