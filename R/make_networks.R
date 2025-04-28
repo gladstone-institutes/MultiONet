@@ -80,7 +80,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
     if (vcount(sub_g)>0 && plot_network && vcount(sub_g) <= plot_network_node_threshold) {
       net <- intergraph::asNetwork(sub_g)
       gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = 3) +
-        labs(title = paste0("Subnetwork for ", names(gene_sets)[gsi]))
+        labs(title = paste0("Network for ", names(gene_sets)[gsi]))
       print(gp)
     }
     
