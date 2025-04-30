@@ -53,7 +53,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
   node_table <- igraph::as_data_frame(g, what = "vertices")
   
   intersection=Reduce(intersect, gene_sets)
-  if(length(intersection)>0)  gene_sets <- c(gene_sets, list(intersection=as.matrix(intersection)) )
+  if(length(intersection)>0)  gene_sets <- c(gene_sets, list(intersection=as.matrix(intersection) ))
     
   gene_sets <- c(gene_sets, list(combined = as.matrix(unique(unlist(gene_sets)))))
   
@@ -102,9 +102,20 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
               paste0(network_file_prefix, "_", names(gene_sets)[gsi], "_nodes.csv"), row.names = FALSE)
   }
   
+  # remove empty networks
+  valid_indices <- which(sapply(networks, is.igraph) == TRUE)
+  
+  # Keep only valid igraphs and matching vectors
+  gene_sets <- gene_sets[valid_indices]
+  networks <- networks[valid_indices]
+  largest_networks <- largest_networks[valid_indices]
+  
+  names(networks)=names(gene_sets)
+  names(largest_networks)=names(gene_sets)
+  
   # network statstics
   network_summary <- data.frame(
-    Network = paste0("Network from ", names(gene_sets), seq_along(networks)),
+    Network = paste0("Network from ", names(gene_sets)),
     Node_Count = sapply(networks, vcount),
     Edge_Count = sapply(networks, ecount)
   )
@@ -112,7 +123,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
   print(network_summary)
   
   largest_network_summary <- data.frame(
-    Network = paste0("Largest sub network from ", names(gene_sets), seq_along(largest_networks)),
+    Network = paste0("Largest sub network from ", names(gene_sets)),
     Node_Count = sapply(largest_networks, vcount),
     Edge_Count = sapply(largest_networks, ecount)
   )
