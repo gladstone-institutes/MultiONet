@@ -6,7 +6,7 @@
 #'
 #' @return A named numeric vector of PageRank scores for each node. A ggnet2 plot is displayed.
 #' @export
-get_pagerank <- function(network) {
+get_pagerank <- function(network, label_size=2) {
   require(GGally)
   require(igraph)
   
@@ -16,7 +16,7 @@ get_pagerank <- function(network) {
                label = TRUE,
                color = "steelblue",
                size = weights,
-               label.size = 3,
+               label.size = label_size,
                legend.size = FALSE,
                legend.color = FALSE) +
     theme(legend.position = "none")
