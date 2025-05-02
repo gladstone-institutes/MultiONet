@@ -52,12 +52,15 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
   edge_table <- igraph::as_data_frame(g, what = "edges")
   node_table <- igraph::as_data_frame(g, what = "vertices")
   
+  gene_sets <- lapply(gene_sets, na.omit)
+  
   intersection=Reduce(intersect, gene_sets)
+  #intersection=intersection[!is.na(intersection)]
+  
   if(length(intersection)>0)  gene_sets <- c(gene_sets, list(intersection=as.matrix(intersection) ))
     
   gene_sets <- c(gene_sets, list(combined = as.matrix(unique(unlist(gene_sets)))))
   
-
   
   networks <- list()
   largest_networks <- list()
