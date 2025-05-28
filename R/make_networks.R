@@ -12,10 +12,11 @@
 #' @param id_source ID source for STRING aliases (e.g., "Ensembl_UniProt_GN")
 #' @param node_size Size of nodes in the network plot
 #' @param label_genes Logical: whether to label genes in plots
+#' @param number_of_largest_networks Integer: how many largest sub-networks to make (default 1)
 #'
 #' @return A list containing two elements: networks and largest_networks, each a list of igraph objects
 #' @export
-make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
+make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, number_of_largest_networks=1,
                           network_file_prefix="network",
                           string_link_file="9606.protein.links.full.v11.5.txt.gz",
                           string_alias_file="9606.protein.aliases.v11.5.txt.gz",
@@ -58,12 +59,13 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
   #intersection=intersection[!is.na(intersection)]
   
   if(length(intersection)>0)  gene_sets <- c(gene_sets, list(intersection=as.matrix(intersection) ))
-    
+  
   gene_sets <- c(gene_sets, list(combined = as.matrix(unique(unlist(gene_sets)))))
   
   
   networks <- list()
   largest_networks <- list()
+  largest_networks_index = 1
   
   for (gsi in seq_along(gene_sets)) {
     cat("Processing", names(gene_sets)[gsi], "...\n")
@@ -88,17 +90,31 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
     }
     
     comps <- clusters(sub_g, mode = "weak")
-    largest <- induced_subgraph(sub_g, V(sub_g)[comps$membership == which.max(comps$csize)])
     
-    if (vcount(sub_g)>0 && plot_network && vcount(largest) <= plot_network_node_threshold) {
-      net <- intergraph::asNetwork(largest)
-      gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = label_size) +
-        labs(title = paste0("Largest subnetwork for ", names(gene_sets)[gsi]))
-      print(gp)
+    csizes=sort(unique(comps$csize), decreasing=T)
+    
+    largest_networks_index_sub=1
+    for(li in 1:min(number_of_largest_networks, length(csizes))){
+      
+      largest <- induced_subgraph(sub_g, V(sub_g)[comps$membership == which(comps$csize==csizes[li])])
+      
+      if (vcount(sub_g)>0 && plot_network && vcount(largest) <= plot_network_node_threshold) {
+        net <- intergraph::asNetwork(largest)
+        gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = label_size) +
+          labs(title = paste0("Largest subnetwork of ", names(gene_sets)[gsi], " ", largest_networks_index_sub))
+        print(gp)
+      }
+      
+      largest_networks[[largest_networks_index]] <- largest
+      names(largest_networks)[largest_networks_index]=paste0("Largest_network_of_",names(gene_sets)[gsi],"_",largest_networks_index_sub)
+      largest_networks_index=largest_networks_index+1
+      largest_networks_index_sub=largest_networks_index_sub+1
+      
     }
+
     
     networks[[gsi]] <- sub_g
-    largest_networks[[gsi]] <- largest
+    
     
     write.csv(edge_table, paste0(network_file_prefix, "_", names(gene_sets)[gsi], "_edges.csv"), row.names = FALSE)
     write.csv(cbind(node_table, GeneSet = names(gene_sets)[gsi]),
@@ -111,10 +127,10 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
   # Keep only valid igraphs and matching vectors
   gene_sets <- gene_sets[valid_indices]
   networks <- networks[valid_indices]
-  largest_networks <- largest_networks[valid_indices]
+  #largest_networks <- largest_networks[valid_indices]
   
   names(networks)=names(gene_sets)
-  names(largest_networks)=names(gene_sets)
+  
   
   # network statstics
   network_summary <- data.frame(
@@ -126,7 +142,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700,
   print(network_summary)
   
   largest_network_summary <- data.frame(
-    Network = paste0("Largest sub network from ", names(gene_sets)),
+    Network = names(largest_networks),
     Node_Count = sapply(largest_networks, vcount),
     Edge_Count = sapply(largest_networks, ecount)
   )
