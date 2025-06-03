@@ -39,7 +39,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
       col_max = pmax(protein1, protein2)
     ) %>%
     distinct(col_min, col_max, .keep_all = TRUE) %>%
-    select(-col_min, -col_max)
+    dplyr::select(-col_min, -col_max)
   
   g <- graph_from_data_frame(unique_pairs, directed = FALSE)
   
@@ -69,7 +69,8 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
   
   for (gsi in seq_along(gene_sets)) {
     cat("Processing", names(gene_sets)[gsi], "...\n")
-    mapped <- merge(gene_sets[[gsi]], aliases, by.x = "V1", by.y = "alias", all.x = TRUE)
+    gene_set_c <- data.frame(V1 = gene_sets[[gsi]], stringsAsFactors = FALSE)
+    mapped <- merge(gene_set_c, aliases, by.x = "V1", by.y = "alias", all.x = TRUE)
     start_nodes <- unique(mapped$V1)
     valid_start_nodes <- start_nodes[start_nodes %in% V(g)$name]
     
@@ -111,7 +112,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
       largest_networks_index_sub=largest_networks_index_sub+1
       
     }
-
+    
     
     networks[[gsi]] <- sub_g
     
