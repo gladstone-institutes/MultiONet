@@ -85,7 +85,16 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
     
     if (vcount(sub_g)>0 && plot_network && vcount(sub_g) <= plot_network_node_threshold) {
       net <- intergraph::asNetwork(sub_g)
-      gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = label_size) +
+      nodes <- network::get.vertex.attribute(net, "vertex.names")
+      
+      # Create a color vector
+      node_colors <- rep("steelblue", length(nodes))  # default color
+      names(node_colors) <- nodes
+      
+      # Assign special colors to specific nodes
+      node_colors[valid_start_nodes[valid_start_nodes%in%names(node_colors)]] <- c("red")  # customize as needed
+      
+      gp <- ggnet2(net, label = label_genes, color = node_colors, size = node_size, label.size = label_size) +
         labs(title = paste0("Network for ", names(gene_sets)[gsi]))
       print(gp)
     }
@@ -100,8 +109,17 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
       largest <- induced_subgraph(sub_g, V(sub_g)[comps$membership == which(comps$csize==csizes[li])])
       
       if (vcount(sub_g)>0 && plot_network && vcount(largest) <= plot_network_node_threshold) {
-        net <- intergraph::asNetwork(largest)
-        gp <- ggnet2(net, label = label_genes, color = "steelblue", size = node_size, label.size = label_size) +
+        nodes <- network::get.vertex.attribute(net, "vertex.names")
+        
+        # Create a color vector
+        node_colors <- rep("steelblue", length(nodes))  # default color
+        names(node_colors) <- nodes
+        
+        # Assign special colors to specific nodes
+        node_colors[valid_start_nodes[valid_start_nodes%in%names(node_colors)]] <- c("red")  # customize as needed
+        
+        
+        ggnet2(net, label = label_genes, color = node_colors, size = node_size, label.size = label_size) +
           labs(title = paste0("Largest subnetwork of ", names(gene_sets)[gsi], " ", largest_networks_index_sub))
         print(gp)
       }
