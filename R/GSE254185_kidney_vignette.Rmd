@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ```{r include=FALSE}
-mypath="/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome"
+mypath=""
 deg<-read.csv("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/GSE254185_kidney/data/DEG_per_cluster.csv")
 head(deg)
 table(deg$Cluster)
