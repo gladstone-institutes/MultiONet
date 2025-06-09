@@ -1,0 +1,184 @@
+---
+title: "MultiONet Analysis Workflow"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r include=FALSE}
+mypath="/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome"
+deg<-read.csv("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/GSE254185_kidney/data/DEG_per_cluster.csv")
+head(deg)
+table(deg$Cluster)
+
+peak<-read.csv("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/GSE254185_kidney/data/top_peak_per_cluster.csv")
+head(peak)
+table(peak$Cluster)
+```
+
+# Introduction
+
+This vignette demonstrates the workflow using the **MultiONet** R package, specifically designed for network-based multi-omics integration and enrichment analyses. We will apply it to kidney data from Maximilian Reck et al. (Nature Communications, 2025) to explore the functionality of MultiONet.
+
+## Required Packages
+
+Install and load necessary libraries:
+
+```{r}
+library(dplyr)
+library(magrittr)
+library(MultiONet)
+library(OmnipathR)
+library(igraph)
+library(GGally)
+```
+
+
+```{r include=FALSE}
+source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/make_directed_graph.R")
+source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/reduced_heatmap.R")
+source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/make_networks.R")
+source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/reduce_enrichment_result.R")
+```
+# Workflow
+
+Define target clusters and initialize variables:
+
+```{r}
+target_clusters <- c("PT Injured", "PT Inflammatory")
+cluster_a <- target_clusters[1]
+```
+
+# Data Preparation
+
+Subset your DEG and peak data based on selected clusters:
+
+```{r}
+data_a <- deg %>% filter(Cluster == cluster_a, adj..p.value < 0.05)
+data_b <- peak %>% filter(Cluster == cluster_a, adj..p.value < 0.05)
+```
+
+# Gene Set Enrichment Analysis (ORA)
+
+Run overrepresentation analysis (ORA) on DEGs, peak genes, their intersection, and their union.
+
+```{r}
+Largest_of_deg_ora <- run_ora(data_a$Gene)
+Largest_of_peak_ora <- run_ora(data_b$Closest.Gene)
+Largest_of_intersection_ora <- run_ora(intersect(data_a$Gene, data_b$Closest.Gene))
+Largest_of_combined_ora <- run_ora(union(data_a$Gene, data_b$Closest.Gene))
+```
+
+Examine the dimensions of the results:
+
+```{r}
+dim(Largest_of_deg_ora)
+dim(Largest_of_peak_ora)
+dim(Largest_of_intersection_ora)
+dim(Largest_of_combined_ora)
+```
+
+# Compare Gene Lists
+
+Compare DEG and peak gene lists to identify overlaps and differences. There is 8% overlap between the two gene sets.
+
+```{r}
+input <- list(deg = data_a$Gene, peak = data_b$Closest.Gene)
+result <- compare_gene_list(input)
+```
+
+# Network Generation
+
+Create networks based on the gene lists. Networks can be constructed from (i) differentially expressed genes (DEGs), (ii) genes associated with peaks, (iii) their intersection, and (iv) their union. For each case, the largest connected subnetwork can also be extracted.
+
+```{r}
+setwd(paste0(mypath,"/data"))
+
+result <- make_networks(
+  input,
+  indirect_neighbors = 1,
+  score_threshold = 996,
+  network_file_prefix = cluster_a,
+  string_link_file = "9606.protein.links.full.v11.5.txt.gz",
+  string_alias_file = "9606.protein.aliases.v11.5.txt.gz",
+  plot_network = TRUE,
+  label_genes = TRUE,
+  plot_network_node_threshold = 2000,
+  label_size = 2
+)
+```
+
+# ORA of Largest Networks
+
+Perform ORA for genes in the largest networks then plot a upset plot to examine the similarity between the two results.:
+
+```{r}
+Largest_network_of_deg_ora <- run_ora(V(result[['largest_networks']][["Largest_network_of_deg_1"]])$name)
+Largest_network_of_peak_ora <- run_ora(V(result[['largest_networks']][["Largest_network_of_peak_1"]])$name)
+
+compare_gene_sets(list(set1 = Largest_network_of_deg_ora, set2 = Largest_network_of_peak_ora))
+```
+
+# Reducing Enrichment Results
+
+Reduce redundancy in enrichment results using semantic similarity. The returned matrix has parent node information that can be used to remove duplicate results:
+
+```{r}
+Largest_network_of_deg_ora %<>% mutate(source = "deg")
+Largest_network_of_peak_ora %<>% mutate(source = "peak")
+
+combined_raw <- rbind(Largest_network_of_deg_ora, Largest_network_of_peak_ora)
+Largest_network_of_deg_peak_ora_reduced <- reduce_enrichment_result(combined_raw)
+Largest_network_of_deg_ora_reduced <- reduce_enrichment_result(Largest_network_of_deg_ora)
+Largest_network_of_peak_ora_reduced <- reduce_enrichment_result(Largest_network_of_peak_ora)
+
+head(knitr::kable(Largest_network_of_peak_ora_reduced))
+```
+
+# Heatmap Visualization
+
+Create a heatmap to visualize reduced enrichment results. Heatmap is based on top 20 gene sets from each gene set results (DEG & peak). The common parents between the two gene sets and the unique parents of each gene set are kept in the result:
+
+```{r}
+reduced_heatmap_r <- reduced_heatmap(
+  Largest_network_of_deg_peak_ora_reduced[['processed_result']],
+  combined_raw,
+  Largest_network_of_deg_ora_reduced[['processed_result']],
+  Largest_network_of_peak_ora_reduced[['processed_result']],
+  file_name="GSE254185_kidney",
+  max_per_set = 20
+)
+```
+```{r, out.width="100%"}
+knitr::include_graphics(paste0(mypath,"/scripts/GSE254185_kidney.pdf"))
+```
+
+
+# Directed Network Visualization
+
+Visualize directed networks with Omnipath, a database built from above 100 resources:
+
+```{r}
+make_directed_graph(result[['largest_networks']][["Largest_network_of_deg_1"]])
+make_directed_graph(result[['largest_networks']][["Largest_network_of_peak_1"]])
+```
+
+# Centrality Analysis (PageRank)
+
+Calculate and visualize PageRank to identify influential nodes:
+
+```{r}
+pagerank_result <- get_pagerank(result[['largest_networks']][["Largest_network_of_combined_1"]])
+```
+
+# Conclusion
+
+This vignette illustrates the use of **MultiONet** to systematically analyze and visualize multi-omics data, enabling comprehensive biological insights through integrated network and enrichment analyses.
