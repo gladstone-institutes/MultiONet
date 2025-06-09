@@ -4,7 +4,7 @@
 \alias{get_pagerank}
 \title{get_pagerank}
 \usage{
-get_pagerank(network)
+get_pagerank(network, label_size = 2)
 }
 \arguments{
 \item{network}{An igraph object representing a gene or protein interaction network.}

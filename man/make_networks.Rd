@@ -8,6 +8,7 @@ make_networks(
   gene_sets,
   indirect_neighbors = 3,
   score_threshold = 700,
+  number_of_largest_networks = 1,
   network_file_prefix = "network",
   string_link_file = "9606.protein.links.full.v11.5.txt.gz",
   string_alias_file = "9606.protein.aliases.v11.5.txt.gz",
@@ -15,7 +16,8 @@ make_networks(
   plot_network_node_threshold = 100,
   id_source = "Ensembl_UniProt_GN",
   node_size = 5,
-  label_genes = TRUE
+  label_genes = TRUE,
+  label_size = 2
 )
 }
 \arguments{
@@ -24,6 +26,8 @@ make_networks(
 \item{indirect_neighbors}{Integer: how many network steps to expand (default 3)}
 
 \item{score_threshold}{Minimum STRING score to include edge (default 700)}
+
+\item{number_of_largest_networks}{Integer: how many largest sub-networks to make (default 1)}
 
 \item{network_file_prefix}{Prefix for CSV files written to disk (default "network")}
 

@@ -28,6 +28,8 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
   require(igraph)
   require(GGally)
   
+  
+  
   aliases <- read.delim(gzfile(string_alias_file), stringsAsFactors = FALSE)
   aliases <- aliases[aliases$source == id_source, ]
   links <- read.delim(gzfile(string_link_file), sep=" ")
@@ -109,17 +111,23 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
       largest <- induced_subgraph(sub_g, V(sub_g)[comps$membership == which(comps$csize==csizes[li])])
       
       if (vcount(sub_g)>0 && plot_network && vcount(largest) <= plot_network_node_threshold) {
-        nodes <- network::get.vertex.attribute(net, "vertex.names")
+        nodes <- V(largest)
         
         # Create a color vector
         node_colors <- rep("steelblue", length(nodes))  # default color
-        names(node_colors) <- nodes
+        names(node_colors) <- names(nodes)
+        
+        #select nodes from input
+        gene_set_c <- data.frame(V1 = gene_sets[[gsi]], stringsAsFactors = FALSE)
+        mapped <- merge(gene_set_c, aliases, by.x = "V1", by.y = "alias", all.x = TRUE)
+        start_nodes <- unique(mapped$V1)
+        valid_start_nodes <- start_nodes[start_nodes %in% V(largest)$name]
         
         # Assign special colors to specific nodes
         node_colors[valid_start_nodes[valid_start_nodes%in%names(node_colors)]] <- c("red")  # customize as needed
         
         
-        ggnet2(net, label = label_genes, color = node_colors, size = node_size, label.size = label_size) +
+        gp=ggnet2(largest, label = label_genes, color = node_colors, size = node_size, label.size = label_size) +
           labs(title = paste0("Largest subnetwork of ", names(gene_sets)[gsi], " ", largest_networks_index_sub))
         print(gp)
       }
