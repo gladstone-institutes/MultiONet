@@ -1,45 +1,58 @@
 # MultiONet
 
-## Installation
-library(devtools)
+**MultiONet** is an R package designed for **multi-omics network analysis**. It integrates differential expression and chromatin accessibility (or other omics) data through gene networks to support functional enrichment, graph analysis, and hypothesis generation.
 
-install_github('gladstone-institutes/MultiONet')
+This package enables researchers to generate interaction networks, reduce redundancy in GO terms, compare enriched pathways across datasets, and visualize subnetworks with biological relevance.
 
+---
 
-## Download STRING networks
-download.file(
-  "https://stringdb-static.org/download/protein.links.full.v11.5/9606.protein.links.full.v11.5.txt.gz",
-  destfile = "9606.protein.links.full.v11.5.txt.gz"
-)
+## 🚀 Features
 
-download.file(
-  "https://stringdb-static.org/download/protein.alias.v11.5/9606.protein.aliases.v11.5.txt.gz",
-  destfile = "9606.protein.aliases.v11.5.txt.gz"
-)
+- Construct STRING-based gene interaction networks for multiple omics inputs.
+- Perform GO term over-representation analysis (ORA).
+- Reduce redundancy in GO enrichment results using semantic similarity.
+- Identify shared and unique GO terms across omics data.
+- Visualize and compare subnetworks.
+- Compute node centrality metrics (e.g., PageRank) for network prioritization.
 
+---
 
-## Make gene sets
-gene_sets=list(Set1=as.matrix(set1),Set2=as.matrix(set2))
+## 🧪 Example: Kidney Injury Multi-omics Data
 
-## Venn diagram
-compare_gene_list(gene_sets)
+This example walks through using **MultiONet** on public kidney injury data from [GSE254185](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE254185) (Maximilian Reck et al., *Nature Communications*, 2025). The goal is to compare transcriptomic and chromatin accessibility signatures in **proximal tubule (PT) injured cells**.
 
-## Generate networks
-network_result=make_networks(gene_sets, indirect_neighbors=1, score_threshold=900, network_file_prefix="network", string_link_file="9606.protein.links.full.v11.5.txt.gz", string_alias_file="9606.protein.aliases.v11.5.txt.gz", 
-                         plot_network=TRUE, label_genes=TRUE)
+```r
+# Load differential expression and peak data
+data_a <- deg %>% filter(Cluster == 1, adj..p.value < 0.05)
+data_b <- peak %>% filter(Cluster == 1, adj..p.value < 0.05)
 
-## Find mcl subnetworks
-mcl_result=find_mcl(network_result[["largest_networks"]][[2]], min_node=50, expansion = 5, inflation = 10, plot_network = TRUE, label_genes = TRUE)
+# ORA: individual and combined gene sets
+ora_deg <- run_ora(data_a$Gene)
+ora_peak <- run_ora(data_b$Closest.Gene)
+ora_intersect <- run_ora(intersect(data_a$Gene, data_b$Closest.Gene))
+ora_union <- run_ora(union(data_a$Gene, data_b$Closest.Gene))
 
-## Perform ORA
-library(igraph)
+# Network-based integration
+input <- list(deg = data_a$Gene, peak = data_b$Closest.Gene)
+result <- make_networks(input,
+                        string_link_file = "9606.protein.links.full.v11.5.txt.gz",
+                        string_alias_file = "9606.protein.aliases.v11.5.txt.gz",
+                        score_threshold = 997,
+                        plot_network = TRUE)
 
-ora_result1=run_ora(V(mcl_result[[1]])$name, pvalueCutoff = 0.05, qvalueCutoff = 0.05, showCategory = 10, plot = FALSE)
+# Extract ORA from largest networks
+ora_net_deg <- run_ora(V(result$largest_networks$Largest_network_of_deg_1)$name)
+ora_net_peak <- run_ora(V(result$largest_networks$Largest_network_of_peak_1)$name)
 
-ora_result2=run_ora(V(mcl_result[[2]])$name, pvalueCutoff = 0.05, qvalueCutoff = 0.05, showCategory = 10, plot = FALSE)
+# Reduce redundancy in GO terms
+combined_raw <- bind_rows(ora_net_deg %>% mutate(source = "deg"),
+                          ora_net_peak %>% mutate(source = "peak"))
+reduced <- reduce_enrichment_result(combined_raw)
 
-## Make an upset plot
-compare_gene_sets(list(set1=ora_result1, set2=ora_result2), pvalueCutoff = 0.05, qvalueCutoff = 0.05)
+# Heatmap of top GO terms
+reduced_heatmap(reduced$processed_result, combined_raw,
+                set1_processed_ora = reduce_enrichment_result(ora_net_deg)$processed_result,
+                set2_processed_ora = reduce_enrichment_result(ora_net_peak)$processed_result)
 
-## Find page ranks
-pageranks=get_pagerank(mcl_result[[1]])
+# PageRank on combined network
+get_pagerank(result$largest_networks$Largest_network_of_combined_1)
