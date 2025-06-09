@@ -15,11 +15,11 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 ```{r include=FALSE}
 mypath=""
-deg<-read.csv("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/GSE254185_kidney/data/DEG_per_cluster.csv")
+deg<-read.csv("/GSE254185_kidney/data/DEG_per_cluster.csv")
 head(deg)
 table(deg$Cluster)
 
-peak<-read.csv("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/GSE254185_kidney/data/top_peak_per_cluster.csv")
+peak<-read.csv("/GSE254185_kidney/data/top_peak_per_cluster.csv")
 head(peak)
 table(peak$Cluster)
 ```
@@ -42,12 +42,6 @@ library(GGally)
 ```
 
 
-```{r include=FALSE}
-source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/make_directed_graph.R")
-source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/reduced_heatmap.R")
-source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/make_networks.R")
-source("/Users/mingyoungshin/Gladstone Dropbox/Min-Gyoung Shin/0_special topic1/multiOmicsiome/scripts/reduce_enrichment_result.R")
-```
 # Workflow
 
 Define target clusters and initialize variables:
