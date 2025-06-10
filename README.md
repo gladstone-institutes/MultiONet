@@ -6,7 +6,7 @@ This package enables researchers to generate interaction networks, reduce redund
 
 ---
 
-## 🚀 Features
+##  Features
 
 - Construct STRING-based gene interaction networks for multiple omics inputs.
 - Perform GO term over-representation analysis (ORA).
@@ -17,7 +17,7 @@ This package enables researchers to generate interaction networks, reduce redund
 
 ---
 
-## 🧪 Example: Kidney Injury Multi-omics Data
+##  Example: Kidney Injury Multi-omics Data
 
 This example walks through using **MultiONet** on public kidney injury data from [GSE254185](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE254185) (Maximilian Reck et al., *Nature Communications*, 2025). The goal is to compare transcriptomic and chromatin accessibility signatures in **proximal tubule (PT) injured cells**.
 
