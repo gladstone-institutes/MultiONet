@@ -22,6 +22,19 @@ This package enables researchers to generate interaction networks, reduce redund
 This example walks through using **MultiONet** on public kidney injury data from [GSE254185](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE254185) (Maximilian Reck et al., *Nature Communications*, 2025). The goal is to compare transcriptomic and chromatin accessibility signatures in **proximal tubule (PT) injured cells**.
 
 ```r
+devtools::install_github("gladstone-institutes/MultiONet")
+
+library(MultiONet)
+
+download.file(
+  "https://stringdb-static.org/download/protein.links.full.v11.5/9606.protein.links.full.v11.5.txt.gz",
+  destfile = "9606.protein.links.full.v11.5.txt.gz"
+)
+download.file(
+  "https://stringdb-static.org/download/protein.alias.v11.5/9606.protein.aliases.v11.5.txt.gz",
+  destfile = "9606.protein.aliases.v11.5.txt.gz"
+)
+
 # Load differential expression and peak data
 data_a <- deg %>% filter(Cluster == 1, adj..p.value < 0.05)
 data_b <- peak %>% filter(Cluster == 1, adj..p.value < 0.05)
