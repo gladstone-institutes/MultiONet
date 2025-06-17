@@ -23,6 +23,7 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
                           plot_network=FALSE, plot_network_node_threshold = 100, id_source="Ensembl_UniProt_GN",
                           node_size=5, label_genes=TRUE, label_size=2) {
   
+  
   require(ggnetwork)
   require(dplyr)
   require(igraph)
@@ -148,65 +149,71 @@ make_networks <- function(gene_sets, indirect_neighbors=3, score_threshold=700, 
               paste0(network_file_prefix, "_", names(gene_sets)[gsi], "_nodes.csv"), row.names = FALSE)
   }
   
-  # remove empty networks
-  valid_indices <- which(sapply(networks, is.igraph) == TRUE)
-  
-  # Keep only valid igraphs and matching vectors
-  gene_sets <- gene_sets[valid_indices]
-  networks <- networks[valid_indices]
-  #largest_networks <- largest_networks[valid_indices]
-  
-  names(networks)=names(gene_sets)
-  
-  
-  # network statstics
-  network_summary <- data.frame(
-    Network = paste0("Network from ", names(gene_sets)),
-    Node_Count = sapply(networks, vcount),
-    Edge_Count = sapply(networks, ecount)
-  )
-  
-  print(network_summary)
-  
-  largest_network_summary <- data.frame(
-    Network = names(largest_networks),
-    Node_Count = sapply(largest_networks, vcount),
-    Edge_Count = sapply(largest_networks, ecount)
-  )
-  
-  print(largest_network_summary)
-  
-  # pairwise network statistics
-  n <- length(gene_sets)
-  node_intersections <- matrix(0, n, n)
-  edge_intersections <- matrix(0, n, n)
-  
-  for (i in 1:(n-1)) {
-    for (j in (i+1):n) {
-      nodes_i <- V(networks[[i]])$name
-      nodes_j <- V(networks[[j]])$name
-      node_intersections[i, j] <- length(intersect(nodes_i, nodes_j))
-      
-      # Get edges as sets of strings (unordered pair representation)
-      edges_i <- apply(as_edgelist(networks[[i]]), 1, function(x) paste(sort(x), collapse = "_"))
-      edges_j <- apply(as_edgelist(networks[[j]]), 1, function(x) paste(sort(x), collapse = "_"))
-      edge_intersections[i, j] <- length(intersect(edges_i, edges_j))
+  if(length(networks)>0){
+    
+    # remove empty networks
+    valid_indices <- which(sapply(networks, is.igraph) == TRUE)
+    
+    # Keep only valid igraphs and matching vectors
+    gene_sets <- gene_sets[valid_indices]
+    networks <- networks[valid_indices]
+    #largest_networks <- largest_networks[valid_indices]
+    
+    names(networks)=names(gene_sets)
+    
+    
+    # network statstics
+    network_summary <- data.frame(
+      Network = paste0("Network from ", names(gene_sets)),
+      Node_Count = sapply(networks, vcount),
+      Edge_Count = sapply(networks, ecount)
+    )
+    
+    print(network_summary)
+    
+    largest_network_summary <- data.frame(
+      Network = names(largest_networks),
+      Node_Count = sapply(largest_networks, vcount),
+      Edge_Count = sapply(largest_networks, ecount)
+    )
+    
+    print(largest_network_summary)
+    
+    # pairwise network statistics
+    n <- length(gene_sets)
+    node_intersections <- matrix(0, n, n)
+    edge_intersections <- matrix(0, n, n)
+    
+    for (i in 1:(n-1)) {
+      for (j in (i+1):n) {
+        nodes_i <- V(networks[[i]])$name
+        nodes_j <- V(networks[[j]])$name
+        node_intersections[i, j] <- length(intersect(nodes_i, nodes_j))
+        
+        # Get edges as sets of strings (unordered pair representation)
+        edges_i <- apply(as_edgelist(networks[[i]]), 1, function(x) paste(sort(x), collapse = "_"))
+        edges_j <- apply(as_edgelist(networks[[j]]), 1, function(x) paste(sort(x), collapse = "_"))
+        edge_intersections[i, j] <- length(intersect(edges_i, edges_j))
+      }
     }
+    
+    # Convert to data frames
+    colnames(node_intersections) <- rownames(node_intersections) <- names(gene_sets)
+    colnames(edge_intersections) <- rownames(edge_intersections) <- names(gene_sets)
+    
+    node_df <- as.data.frame(node_intersections)
+    edge_df <- as.data.frame(edge_intersections)
+    
+    cat("Node Intersections:\n")
+    print(node_df)
+    
+    cat("\nEdge Intersections:\n")
+    print(edge_df)
+    
+    
+    return(list(networks = networks, largest_networks = largest_networks))
+  }else{
+    print("No network to build")
+    return(NA)
   }
-  
-  # Convert to data frames
-  colnames(node_intersections) <- rownames(node_intersections) <- names(gene_sets)
-  colnames(edge_intersections) <- rownames(edge_intersections) <- names(gene_sets)
-  
-  node_df <- as.data.frame(node_intersections)
-  edge_df <- as.data.frame(edge_intersections)
-  
-  cat("Node Intersections:\n")
-  print(node_df)
-  
-  cat("\nEdge Intersections:\n")
-  print(edge_df)
-  
-  
-  return(list(networks = networks, largest_networks = largest_networks))
 }
