@@ -47,7 +47,7 @@ reduced_heatmap <- function(combined_processed_ora, combined_original_ora, set1_
 
   heat_data <- derived_result %>%
     mutate(padj_log = -log10(p.adjust)) %>%
-    select(ID, source, padj_log) %>%
+    dplyr::select(ID, source, padj_log) %>%
     group_by(source, ID) %>%
     summarise(padj_log = max(padj_log, na.rm = TRUE), .groups = "drop") %>%
     pivot_wider(names_from = ID, values_from = padj_log)
