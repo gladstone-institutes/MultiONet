@@ -22,6 +22,8 @@ make_directed_graph <- function(network,
   require(OmnipathR)
   require(igraph)
   require(GGally)
+  require(dplyr)
+  require(magrittr)
   
   # Import directional interactions from Omnipath
   interactions <- OmnipathR::import_omnipath_interactions()
